@@ -20,8 +20,8 @@
  *
  * Revision History:
  *   $Log: qmt_lock_impl_i386.S,v $
- *   Revision 1.1  2007-03-02 19:44:55  chen
- *   Initial revision
+ *   Revision 1.1.1.1  2007-03-02 19:44:55  chen
+ *   Initial import qmt source
  *
  *
  */
