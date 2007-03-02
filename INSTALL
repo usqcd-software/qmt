@@ -1,0 +1,19 @@
+qmt library installation
+
+1) unpack qmt-xxx.tar.gz.
+
+2) In the directory where the qmt distribution is unpacked, run configure 
+script.
+
+3) Different barrier algorithms can be used: queue-based (default), 
+centralized and lock based. These options can be enabled by configure 
+--enable-xxx.
+
+4) If public APIs are desired, configure --enable-public-release.
+
+5) Run quick test by make check.
+
+6) Make sure compile library on the machine you are going to run your code.
+The AMD and Intel machines have subtle differences.
+
+

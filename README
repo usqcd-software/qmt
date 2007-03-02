@@ -1,0 +1,11 @@
+			QMT Implementation for i386 and x86-64
+
+				Feb. 28, 2007
+
+QMT is a software library providing OpenMP like fork-join multi-thread APIs.
+The current implementation works on i386 and x86-64 using pthread and other
+optimizations.
+
+See INSTALL file for installation instructions.
+
+Send bugs and comments to chen@jlab.org
