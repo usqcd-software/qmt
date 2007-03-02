@@ -21,11 +21,11 @@ esac
 # Check whether this is a 32 bit build
 case $build in
      *x86_64*)
-     AC_MSG_NOTICE([This is a 64 bit machine])
+     AC_MSG_NOTICE([This is a 64 bit machine, cannot compile 32 bit library here.])
      qmt_64bit=yes
      ;;
      *)
-     AC_MSG_NOTICE([This is a 32 bit machine])
+     AC_MSG_NOTICE([This is a 32 bit machine, cannot compile 64 bit library here.])
      qmt_64bit=no
      ;;
 esac
@@ -35,10 +35,10 @@ AM_CONDITIONAL([QMT_BUILD_32BIT],[test "$qmt_64bit" = no])
 if grep -q Intel /proc/cpuinfo
 then
 	AC_MSG_NOTICE([This is an Intel Xeon Machine])
-	AC_SUBST(CFLAGS,['-Wall -D_REENTRANT -O3 -fexpensive-optimizations -ffast-math -fomit-frame-pointer -finline-functions -fpeephole -funroll-loops -mtune=nocona'])
+	AC_SUBST(CFLAGS,['-Wall -D_REENTRANT -O3 -fexpensive-optimizations -ffast-math -fomit-frame-pointer -finline-functions -fpeephole -funroll-loops'])
 else
 	AC_MSG_NOTICE([This is a AMD Opteron Machine])
-	AC_SUBST(CFLAGS,['-Wall -D_REENTRANT -O3 -fexpensive-optimizations -ffast-math -fomit-frame-pointer -finline-functions -fpeephole -funroll-loops -mtune=opteron'])
+	AC_SUBST(CFLAGS,['-Wall -D_REENTRANT -O3 -fexpensive-optimizations -ffast-math -fomit-frame-pointer -finline-functions -fpeephole -funroll-loops'])
 fi
 
 AC_PROG_CC
@@ -57,6 +57,24 @@ AC_CHECK_TOOL(AR, ar, [ar])
 AC_C_CONST
 AC_C_INLINE
 AC_C_VOLATILE
+
+#Enable Intel or AMD
+PROC=opteron
+AC_ARG_ENABLE([xeon],
+	AC_HELP_STRING([--enable-xeon],[compile qmt library optimized for Intel Xeon processors.]),
+	[if test "$enableval" = yes; then PROC=xeon; fi])
+AC_ARG_ENABLE([opteron],
+	AC_HELP_STRING([--enable-opteron],[compile qmt library optimized for AMD Opteron processors.]),
+	[if test "$enableval" = yes; then PROC=opteron; fi])
+
+if test "$PROC" = opteron
+then
+	AC_MSG_NOTICE([Compile qmt library optimized for AMD Opteron processors.])
+	AC_SUBST(CPU_DEF,[-mtune=opteron])
+else
+	AC_MSG_NOTICE([Compile qmt library optimized for Intel Xeon processors.])
+	AC_SUBST(CPU_DEF,[-mtune=nocona])
+fi
 
 # Enable different barrier algorithm
 BARRIER_ALG=queue

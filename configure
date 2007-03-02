@@ -313,7 +313,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP EGREP INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE build build_cpu build_vendor build_os QMT_BUILD_32BIT_TRUE QMT_BUILD_32BIT_FALSE CCAS CCASFLAGS RANLIB ac_ct_RANLIB AR ac_ct_AR BARRIER_DEF RELEASE_DEF LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP EGREP INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE build build_cpu build_vendor build_os QMT_BUILD_32BIT_TRUE QMT_BUILD_32BIT_FALSE CCAS CCASFLAGS RANLIB ac_ct_RANLIB AR ac_ct_AR CPU_DEF BARRIER_DEF RELEASE_DEF LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -864,6 +864,10 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --disable-dependency-tracking  speeds up one-time build
   --enable-dependency-tracking   do not reject slow dependency extractors
+  --enable-xeon           compile qmt library optimized for Intel Xeon
+                          processors.
+  --enable-opteron        compile qmt library optimized for AMD Opteron
+                          processors.
   --enable-centralized-barrier
                           Use a centralized barrier algorithm instead of the
                           default queue-based barrier algorithm
@@ -3568,13 +3572,13 @@ esac
 # Check whether this is a 32 bit build
 case $build in
      *x86_64*)
-     { echo "$as_me:$LINENO: This is a 64 bit machine" >&5
-echo "$as_me: This is a 64 bit machine" >&6;}
+     { echo "$as_me:$LINENO: This is a 64 bit machine, cannot compile 32 bit library here." >&5
+echo "$as_me: This is a 64 bit machine, cannot compile 32 bit library here." >&6;}
      qmt_64bit=yes
      ;;
      *)
-     { echo "$as_me:$LINENO: This is a 32 bit machine" >&5
-echo "$as_me: This is a 32 bit machine" >&6;}
+     { echo "$as_me:$LINENO: This is a 32 bit machine, cannot compile 64 bit library here." >&5
+echo "$as_me: This is a 32 bit machine, cannot compile 64 bit library here." >&6;}
      qmt_64bit=no
      ;;
 esac
@@ -3594,12 +3598,12 @@ if grep -q Intel /proc/cpuinfo
 then
 	{ echo "$as_me:$LINENO: This is an Intel Xeon Machine" >&5
 echo "$as_me: This is an Intel Xeon Machine" >&6;}
-	CFLAGS='-Wall -D_REENTRANT -O3 -fexpensive-optimizations -ffast-math -fomit-frame-pointer -finline-functions -fpeephole -funroll-loops -mtune=nocona'
+	CFLAGS='-Wall -D_REENTRANT -O3 -fexpensive-optimizations -ffast-math -fomit-frame-pointer -finline-functions -fpeephole -funroll-loops'
 
 else
 	{ echo "$as_me:$LINENO: This is a AMD Opteron Machine" >&5
 echo "$as_me: This is a AMD Opteron Machine" >&6;}
-	CFLAGS='-Wall -D_REENTRANT -O3 -fexpensive-optimizations -ffast-math -fomit-frame-pointer -finline-functions -fpeephole -funroll-loops -mtune=opteron'
+	CFLAGS='-Wall -D_REENTRANT -O3 -fexpensive-optimizations -ffast-math -fomit-frame-pointer -finline-functions -fpeephole -funroll-loops'
 
 fi
 
@@ -4828,6 +4832,32 @@ _ACEOF
 fi
 
 
+#Enable Intel or AMD
+PROC=opteron
+# Check whether --enable-xeon or --disable-xeon was given.
+if test "${enable_xeon+set}" = set; then
+  enableval="$enable_xeon"
+  if test "$enableval" = yes; then PROC=xeon; fi
+fi;
+# Check whether --enable-opteron or --disable-opteron was given.
+if test "${enable_opteron+set}" = set; then
+  enableval="$enable_opteron"
+  if test "$enableval" = yes; then PROC=opteron; fi
+fi;
+
+if test "$PROC" = opteron
+then
+	{ echo "$as_me:$LINENO: Compile qmt library optimized for AMD Opteron processors." >&5
+echo "$as_me: Compile qmt library optimized for AMD Opteron processors." >&6;}
+	CPU_DEF=-mtune=opteron
+
+else
+	{ echo "$as_me:$LINENO: Compile qmt library optimized for Intel Xeon processors." >&5
+echo "$as_me: Compile qmt library optimized for Intel Xeon processors." >&6;}
+	CPU_DEF=-mtune=nocona
+
+fi
+
 # Enable different barrier algorithm
 BARRIER_ALG=queue
 # Check whether --enable-centralized-barrier or --disable-centralized-barrier was given.
@@ -5598,6 +5628,7 @@ s,@RANLIB@,$RANLIB,;t t
 s,@ac_ct_RANLIB@,$ac_ct_RANLIB,;t t
 s,@AR@,$AR,;t t
 s,@ac_ct_AR@,$ac_ct_AR,;t t
+s,@CPU_DEF@,$CPU_DEF,;t t
 s,@BARRIER_DEF@,$BARRIER_DEF,;t t
 s,@RELEASE_DEF@,$RELEASE_DEF,;t t
 s,@LIBOBJS@,$LIBOBJS,;t t
