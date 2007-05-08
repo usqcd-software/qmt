@@ -313,7 +313,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP EGREP INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE build build_cpu build_vendor build_os QMT_BUILD_32BIT_TRUE QMT_BUILD_32BIT_FALSE CCAS CCASFLAGS RANLIB ac_ct_RANLIB AR ac_ct_AR CPU_DEF BARRIER_DEF RELEASE_DEF LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP EGREP INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE build build_cpu build_vendor build_os QMT_BUILD_32BIT_TRUE QMT_BUILD_32BIT_FALSE CCAS CCASFLAGS RANLIB ac_ct_RANLIB AR ac_ct_AR CPU_DEF AFFINITY_DEF BARRIER_DEF RELEASE_DEF LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -868,6 +868,8 @@ Optional Features:
                           processors.
   --enable-opteron        compile qmt library optimized for AMD Opteron
                           processors.
+  --enable-thread_affinity
+                          To bind a thread to a core, default is on.
   --enable-centralized-barrier
                           Use a centralized barrier algorithm instead of the
                           default queue-based barrier algorithm
@@ -3525,7 +3527,8 @@ fi
 
 
 
-# Get host information
+# Get compiling host information
+BUILD_OS=linux
 # Make sure we can run config.sub.
 $ac_config_sub sun4 >/dev/null 2>&1 ||
   { { echo "$as_me:$LINENO: error: cannot run $ac_config_sub" >&5
@@ -3565,8 +3568,9 @@ case $build in
 echo "$as_me: This is a linux machine." >&6;}
      ;;
      *)
-     { echo "$as_me:$LINENO: WARNING: This package has not been tried on your platform!!!!!!" >&5
-echo "$as_me: WARNING: This package has not been tried on your platform!!!!!!" >&2;}
+     { echo "$as_me:$LINENO: WARNING: This package has not been tried on your platform $build !" >&5
+echo "$as_me: WARNING: This package has not been tried on your platform $build !" >&2;}
+     BUILD_OS=$build_os
      ;;
 esac
 # Check whether this is a 32 bit build
@@ -3592,20 +3596,6 @@ else
   QMT_BUILD_32BIT_FALSE=
 fi
 
-
-# Check whether this is a Intel machine
-if grep -q Intel /proc/cpuinfo
-then
-	{ echo "$as_me:$LINENO: This is an Intel Xeon Machine" >&5
-echo "$as_me: This is an Intel Xeon Machine" >&6;}
-	CFLAGS='-Wall -D_REENTRANT -O3 -fexpensive-optimizations -ffast-math -fomit-frame-pointer -finline-functions -fpeephole -funroll-loops'
-
-else
-	{ echo "$as_me:$LINENO: This is a AMD Opteron Machine" >&5
-echo "$as_me: This is a AMD Opteron Machine" >&6;}
-	CFLAGS='-Wall -D_REENTRANT -O3 -fexpensive-optimizations -ffast-math -fomit-frame-pointer -finline-functions -fpeephole -funroll-loops'
-
-fi
 
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
@@ -4588,7 +4578,6 @@ fi
 
 
 
-
 # Checks for typedefs, structures, and compiler characteristics.
 echo "$as_me:$LINENO: checking for an ANSI C-conforming const" >&5
 echo $ECHO_N "checking for an ANSI C-conforming const... $ECHO_C" >&6
@@ -4845,17 +4834,118 @@ if test "${enable_opteron+set}" = set; then
   if test "$enableval" = yes; then PROC=opteron; fi
 fi;
 
-if test "$PROC" = opteron
+
+# Set Compiler Flag
+if test "$BUILD_OS" = linux
 then
-	{ echo "$as_me:$LINENO: Compile qmt library optimized for AMD Opteron processors." >&5
+	CFLAGS='-Wall -D_REENTRANT -O3 -fexpensive-optimizations -ffast-math -fomit-frame-pointer -finline-functions -fpeephole -funroll-loops'
+
+
+	if test "$PROC" = opteron
+	then
+		{ echo "$as_me:$LINENO: Compile qmt library optimized for AMD Opteron processors." >&5
 echo "$as_me: Compile qmt library optimized for AMD Opteron processors." >&6;}
-	CPU_DEF=-mtune=opteron
+		CPU_DEF=-mtune=opteron
 
-else
-	{ echo "$as_me:$LINENO: Compile qmt library optimized for Intel Xeon processors." >&5
+	else
+		{ echo "$as_me:$LINENO: Compile qmt library optimized for Intel Xeon processors." >&5
 echo "$as_me: Compile qmt library optimized for Intel Xeon processors." >&6;}
-	CPU_DEF=-mtune=nocona
+		CPU_DEF=-mtune=nocona
 
+	fi
+fi
+
+# Check whether we have pthread_setaffinity_np
+QMT_HAS_AFFINITY=yes
+echo "$as_me:$LINENO: checking for pthread_setaffinity_np in -lpthread" >&5
+echo $ECHO_N "checking for pthread_setaffinity_np in -lpthread... $ECHO_C" >&6
+if test "${ac_cv_lib_pthread_pthread_setaffinity_np+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lpthread  $LIBS"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+/* Override any gcc2 internal prototype to avoid an error.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+/* We use char because int might match the return type of a gcc2
+   builtin and then its argument prototype would still apply.  */
+char pthread_setaffinity_np ();
+int
+main ()
+{
+pthread_setaffinity_np ();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_lib_pthread_pthread_setaffinity_np=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_cv_lib_pthread_pthread_setaffinity_np=no
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+echo "$as_me:$LINENO: result: $ac_cv_lib_pthread_pthread_setaffinity_np" >&5
+echo "${ECHO_T}$ac_cv_lib_pthread_pthread_setaffinity_np" >&6
+if test $ac_cv_lib_pthread_pthread_setaffinity_np = yes; then
+  QMT_HAS_AFFINITY=yes
+else
+  QMT_HAS_AFFINITY=no
+fi
+
+
+# Whether we enable thread affinity
+QMT_ENABLE_AFFINITY=yes
+# Check whether --enable-thread_affinity or --disable-thread_affinity was given.
+if test "${enable_thread_affinity+set}" = set; then
+  enableval="$enable_thread_affinity"
+  if test "$enableval" = yes; then QMT_ENABLE_AFFINITY=yes; else QMT_ENABLE_AFFINITY=no; fi
+fi;
+
+# Now we turn affinity on
+if test "$QMT_HAS_AFFINITY" = yes
+then
+	if test "$QMT_ENABLE_AFFINITY" = yes
+	then
+		{ echo "$as_me:$LINENO: Compile qmt library with pthread affinity enabled." >&5
+echo "$as_me: Compile qmt library with pthread affinity enabled." >&6;}
+		AFFINITY_DEF=-D_BIND_CORE
+
+	fi
 fi
 
 # Enable different barrier algorithm
@@ -5629,6 +5719,7 @@ s,@ac_ct_RANLIB@,$ac_ct_RANLIB,;t t
 s,@AR@,$AR,;t t
 s,@ac_ct_AR@,$ac_ct_AR,;t t
 s,@CPU_DEF@,$CPU_DEF,;t t
+s,@AFFINITY_DEF@,$AFFINITY_DEF,;t t
 s,@BARRIER_DEF@,$BARRIER_DEF,;t t
 s,@RELEASE_DEF@,$RELEASE_DEF,;t t
 s,@LIBOBJS@,$LIBOBJS,;t t

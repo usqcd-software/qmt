@@ -20,8 +20,11 @@
  *
  * Revision History:
  *   $Log: qmt_pthread.c,v $
- *   Revision 1.1  2007-03-02 19:44:55  chen
- *   Initial revision
+ *   Revision 1.2  2007-05-08 16:57:25  chen
+ *   add configuration flag to do affinity
+ *
+ *   Revision 1.1.1.1  2007/03/02 19:44:55  chen
+ *   Initial import qmt source
  *
  *
  */
@@ -83,16 +86,12 @@ static qmt_thread_info_t my_thread_info;
 
 /**
  * How do thread number mapped to core number
- * For linux, cpu id 0, 2 belongs to the first CPU
- *            cpu id 1, 3 belongs to the second CPU
+ * master thread always to core 0
  */
 static int
 qmt_thread_num_to_core (int tnum, int numcores)
 {
-  if (2 * tnum < numcores)
-    return 2 * tnum;
-  else
-    return 2 * tnum % numcores + 1;
+  return tnum;
 }
 
 /**
@@ -166,58 +165,15 @@ qmt_get_num_cpus (void)
  */
  
 int
-qmt_thread_number (int tid)
+qmt_thread_number (pthread_t tid)
 {
   int i;
 
-  for (i = 0; i < my_thread_info.nsthreads; i++)
-    if (tid == my_thread_info.tid[i])
+  for (i = 0; i < my_thread_info.nsthreads; i++) 
+    if (pthread_equal(tid, my_thread_info.tid[i]) != 0)
       return i;
   fprintf (stderr, "Cannot find thread id for this thread, error\n");
   return -1;
-}
-
-/**
- * Bind a thread to a particular core
- * 
- * This part of code is not really portable
- * It is available inside NPTL
- *
- */
-static int
-qmt_bind_thread_to_core (pthread_t tid)
-{
-#if defined(__linux) 
-
-  int ret, thread_num, core_num;
-  cpu_set_t cpu_mask;
-
-  /**
-   * Find thread number for this thread id
-   */
-  thread_num = qmt_thread_number (tid);
-  
-  /**
-   * Calculate which core this thread should be bound to
-   */
-  core_num = qmt_thread_num_to_core (thread_num, my_thread_info.ncores);
-
-  fprintf (stderr, "Thread %d is trying to bind to core %d \n", thread_num, core_num);
-
-
-  CPU_ZERO (&cpu_mask);
-  CPU_SET (core_num, &cpu_mask);
-
-  ret = pthread_setaffinity_np (tid, sizeof(cpu_mask), &cpu_mask);
-  if (ret != 0) {
-    fprintf (stderr, "Thread %d cannot be bounded to core %d.\n",
-	     qmt_thread_number (tid), core_num);
-  }
-  return ret;
-
-#else
-#error qmt_bind_thread_to_core is not implemented for this OS
-#endif
 }
 
 /**
@@ -257,6 +213,49 @@ qmt_core_for_thread (pthread_t tid)
 #endif
 }
 
+/**
+ * Bind a thread to a particular core
+ * 
+ * This part of code is not really portable
+ * It is available inside NPTL
+ *
+ */
+static int
+qmt_bind_thread_to_core (pthread_t tid)
+{
+#if defined(__linux) 
+
+  int ret, thread_num, core_num;
+  cpu_set_t cpu_mask;
+
+  /**
+   * Find thread number for this thread id
+   */
+  thread_num = qmt_thread_number (tid);
+  
+  /**
+   * Calculate which core this thread should be bound to
+   */
+  core_num = qmt_thread_num_to_core (thread_num, my_thread_info.ncores);
+
+  CPU_ZERO (&cpu_mask);
+  CPU_SET (core_num, &cpu_mask);
+
+  ret = pthread_setaffinity_np (tid, sizeof(cpu_mask), &cpu_mask);
+  if (ret != 0) {
+    fprintf (stderr, "Thread %d cannot be bounded to core %d.\n",
+	     qmt_thread_number (tid), core_num);
+  }
+#ifdef _QMT_DEBUG 
+  fprintf (stderr, "Thread %d is bound to core %d\n",
+	   thread_num, qmt_core_for_thread (tid));
+#endif
+  return ret;
+
+#else
+#error qmt_bind_thread_to_core is not implemented for this OS
+#endif
+}
 
 #if !defined (_USE_SPIN_BARRIER) && !defined (_USE_LOCK_BARRIER)
 /**
@@ -686,10 +685,6 @@ qmt_create_threads (void)
     my_thread_info.thptr[i] = 0;
   }
 
-#ifdef _BIND_CORE
-  qmt_bind_thread_to_core (pthread_self());
-#endif
-
   /*
    * allocate and initialize thread data structure for the master thread
    */
@@ -708,6 +703,9 @@ qmt_create_threads (void)
   my_thread_info.tid[0] = pthread_self ();
   my_thread_info.thptr[0] = thr;
 
+#ifdef _BIND_CORE
+  qmt_bind_thread_to_core (pthread_self());
+#endif
  
   for(i = 1; i < nthreads; i++ ) {
     /*
@@ -1006,7 +1004,7 @@ qmt_thread_id (void)
   pthread_t tid = pthread_self ();
 
   for (i = 0; i < my_thread_info.nsthreads; i++)
-    if (tid == my_thread_info.tid[i])
+    if (pthread_equal(tid, my_thread_info.tid[i]) != 0)
       return i;
   fprintf (stderr, "Cannot find thread id for this thread, error\n");
   return -1;

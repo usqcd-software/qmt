@@ -84,6 +84,7 @@ ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
+AFFINITY_DEF = @AFFINITY_DEF@
 AMDEP_FALSE = @AMDEP_FALSE@
 AMDEP_TRUE = @AMDEP_TRUE@
 AMTAR = @AMTAR@
@@ -176,7 +177,7 @@ libqmt_a_SOURCES = qmt.h qmt_atomic.c qmt_atomic.h qmt_lock.c \
 	qmt_lock.h qmt_pthread.c qmt_pthread.h $(am__append_1)
 @QMT_BUILD_32BIT_FALSE@EXTRA_DIST = qmt_lock_impl_i386.S qmt_lock_impl_x86_64.S
 @QMT_BUILD_32BIT_TRUE@EXTRA_DIST = qmt_lock_impl_x86_64.S
-AM_CFLAGS = @BARRIER_DEF@ @RELEASE_DEF@ @CPU_DEF@
+AM_CFLAGS = @BARRIER_DEF@ @RELEASE_DEF@ @CPU_DEF@ @AFFINITY_DEF@
 pthread_sync_SOURCES = pthread_sync.c
 pthread_sync_LDADD = libqmt.a -lpthread -lm
 all: all-am

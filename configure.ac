@@ -7,7 +7,8 @@ AC_CHECK_HEADERS([stdlib.h string.h pthread.h])
 
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 
-# Get host information
+# Get compiling host information
+BUILD_OS=linux
 AC_CANONICAL_BUILD
 # Check whether this is a linux machine
 case $build in
@@ -15,7 +16,8 @@ case $build in
      AC_MSG_NOTICE([This is a linux machine.])
      ;;
      *)
-     AC_MSG_WARN([This package has not been tried on your platform!!!!!!])
+     AC_MSG_WARN([This package has not been tried on your platform $build !])
+     BUILD_OS=$build_os
      ;;
 esac
 # Check whether this is a 32 bit build
@@ -31,16 +33,6 @@ case $build in
 esac
 AM_CONDITIONAL([QMT_BUILD_32BIT],[test "$qmt_64bit" = no])
 
-# Check whether this is a Intel machine
-if grep -q Intel /proc/cpuinfo
-then
-	AC_MSG_NOTICE([This is an Intel Xeon Machine])
-	AC_SUBST(CFLAGS,['-Wall -D_REENTRANT -O3 -fexpensive-optimizations -ffast-math -fomit-frame-pointer -finline-functions -fpeephole -funroll-loops'])
-else
-	AC_MSG_NOTICE([This is a AMD Opteron Machine])
-	AC_SUBST(CFLAGS,['-Wall -D_REENTRANT -O3 -fexpensive-optimizations -ffast-math -fomit-frame-pointer -finline-functions -fpeephole -funroll-loops'])
-fi
-
 AC_PROG_CC
 
 AM_PROG_AS
@@ -52,7 +44,6 @@ AC_PROG_RANLIB
 AC_CHECK_TOOL(AR, ar, [ar])
 
 
-
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_C_INLINE
@@ -61,19 +52,46 @@ AC_C_VOLATILE
 #Enable Intel or AMD
 PROC=opteron
 AC_ARG_ENABLE([xeon],
-	AC_HELP_STRING([--enable-xeon],[compile qmt library optimized for Intel Xeon processors.]),
-	[if test "$enableval" = yes; then PROC=xeon; fi])
+AC_HELP_STRING([--enable-xeon],[compile qmt library optimized for Intel Xeon processors.]),
+[if test "$enableval" = yes; then PROC=xeon; fi])
 AC_ARG_ENABLE([opteron],
-	AC_HELP_STRING([--enable-opteron],[compile qmt library optimized for AMD Opteron processors.]),
-	[if test "$enableval" = yes; then PROC=opteron; fi])
+AC_HELP_STRING([--enable-opteron],[compile qmt library optimized for AMD Opteron processors.]),
+[if test "$enableval" = yes; then PROC=opteron; fi])
 
-if test "$PROC" = opteron
+
+# Set Compiler Flag
+if test "$BUILD_OS" = linux
 then
-	AC_MSG_NOTICE([Compile qmt library optimized for AMD Opteron processors.])
-	AC_SUBST(CPU_DEF,[-mtune=opteron])
-else
-	AC_MSG_NOTICE([Compile qmt library optimized for Intel Xeon processors.])
-	AC_SUBST(CPU_DEF,[-mtune=nocona])
+	AC_SUBST(CFLAGS,['-Wall -D_REENTRANT -O3 -fexpensive-optimizations -ffast-math -fomit-frame-pointer -finline-functions -fpeephole -funroll-loops'])
+
+	if test "$PROC" = opteron
+	then
+		AC_MSG_NOTICE([Compile qmt library optimized for AMD Opteron processors.])
+		AC_SUBST(CPU_DEF,[-mtune=opteron])
+	else
+		AC_MSG_NOTICE([Compile qmt library optimized for Intel Xeon processors.])
+		AC_SUBST(CPU_DEF,[-mtune=nocona])
+	fi
+fi
+
+# Check whether we have pthread_setaffinity_np
+QMT_HAS_AFFINITY=yes
+AC_CHECK_LIB([pthread],[pthread_setaffinity_np],[QMT_HAS_AFFINITY=yes],[QMT_HAS_AFFINITY=no])
+
+# Whether we enable thread affinity
+QMT_ENABLE_AFFINITY=yes
+AC_ARG_ENABLE([thread_affinity],
+	AC_HELP_STRING([--enable-thread_affinity],[To bind a thread to a core, default is on.]),
+	[if test "$enableval" = yes; then QMT_ENABLE_AFFINITY=yes; else QMT_ENABLE_AFFINITY=no; fi])
+
+# Now we turn affinity on
+if test "$QMT_HAS_AFFINITY" = yes
+then
+	if test "$QMT_ENABLE_AFFINITY" = yes
+	then
+		AC_MSG_NOTICE([Compile qmt library with pthread affinity enabled.])
+		AC_SUBST(AFFINITY_DEF,[-D_BIND_CORE])
+	fi
 fi
 
 # Enable different barrier algorithm
