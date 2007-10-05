@@ -20,11 +20,24 @@
  *
  * Revision History:
  *   $Log: qmt.h,v $
- *   Revision 1.1  2007-03-02 19:44:55  chen
- *   Initial revision
+ *   Revision 1.2  2007-10-05 04:52:50  edwards
+ *   Added some doxygen starting info.
+ *
+ *   Revision 1.1.1.1  2007/03/02 19:44:55  chen
+ *   Initial import qmt source
  *
  *
  */
+
+/*! \mainpage  QMT
+ *
+ * \section Description
+ *
+ * QMT is a software library providing OpenMP like fork-join multi-thread APIs.
+ * The current implementation works on i386 and x86-64 using pthread and other
+ * optimizations.
+ */
+
 #ifndef _QMT_H
 #define _QMT_H
 
