@@ -1,3 +1,7 @@
+2007-10-05 01:20  edwards
+
+	* doc/QMTdoxyfile: Set path names to NO.
+
 2007-10-05 00:52  edwards
 
 	* src/qmt.h: Added some doxygen starting info.
