@@ -1,3 +1,7 @@
+2007-10-19 16:03  bjoo
+
+	* configure, configure.ac, src/Makefile.am: Changed configure
+
 2007-10-05 01:20  edwards
 
 	* doc/QMTdoxyfile: Set path names to NO.
