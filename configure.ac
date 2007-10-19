@@ -62,15 +62,15 @@ AC_HELP_STRING([--enable-opteron],[compile qmt library optimized for AMD Opteron
 # Set Compiler Flag
 if test "$BUILD_OS" = linux
 then
-	AC_SUBST(CFLAGS,['-Wall -D_REENTRANT -O3 -fexpensive-optimizations -ffast-math -fomit-frame-pointer -finline-functions -fpeephole -funroll-loops'])
+	AC_SUBST(QMT_CFLAGS,['-Wall -D_REENTRANT -O3 -fexpensive-optimizations -ffast-math -fomit-frame-pointer -finline-functions -fpeephole -funroll-loops'])
 
 	if test "$PROC" = opteron
 	then
 		AC_MSG_NOTICE([Compile qmt library optimized for AMD Opteron processors.])
-		AC_SUBST(CPU_DEF,[-mtune=opteron])
+#		AC_SUBST(CPU_DEF,[-mtune=opteron])
 	else
 		AC_MSG_NOTICE([Compile qmt library optimized for Intel Xeon processors.])
-		AC_SUBST(CPU_DEF,[-mtune=nocona])
+#		AC_SUBST(CPU_DEF,[-mtune=nocona])
 	fi
 fi
 
