@@ -50,13 +50,16 @@ AC_C_INLINE
 AC_C_VOLATILE
 
 #Enable Intel or AMD
-PROC=opteron
+PROC=generic
 AC_ARG_ENABLE([xeon],
 AC_HELP_STRING([--enable-xeon],[compile qmt library optimized for Intel Xeon processors.]),
 [if test "$enableval" = yes; then PROC=xeon; fi])
 AC_ARG_ENABLE([opteron],
 AC_HELP_STRING([--enable-opteron],[compile qmt library optimized for AMD Opteron processors.]),
 [if test "$enableval" = yes; then PROC=opteron; fi])
+AC_ARG_ENABLE([barcelona],
+AC_HELP_STRING([--enable-barcelona],[compile qmt library optimized for AMD Opteron family 10h (barcelona) processors.]),
+[if test "$enableval" = yes; then PROC=barcelona; fi])
 
 
 # Set Compiler Flag
@@ -67,10 +70,17 @@ then
 	if test "$PROC" = opteron
 	then
 		AC_MSG_NOTICE([Compile qmt library optimized for AMD Opteron processors.])
-#		AC_SUBST(CPU_DEF,[-mtune=opteron])
-	else
+		AC_SUBST(CPU_DEF,[-mtune=opteron])
+	elif test "$PROC" = barcelona
+	then
+		AC_MSG_NOTICE([Compile qmt library optimized for AMD Opteron family 10h (barcelona) processors.])
+		AC_SUBST(CPU_DEF,[-mtune=amdfam10])
+	elif test "$PROC" = xeon
+	then
 		AC_MSG_NOTICE([Compile qmt library optimized for Intel Xeon processors.])
-#		AC_SUBST(CPU_DEF,[-mtune=nocona])
+		AC_SUBST(CPU_DEF,[-mtune=nocona])
+	else
+		AC_MSG_NOTICE([Compile qmt library for generic processors.])
 	fi
 fi
 
