@@ -1,3 +1,8 @@
+2008-01-25 13:53  chen
+
+	* src/: qmt_pthread.c, qmt_pthread.h: Remove unneccessary cache
+	  write for queue-based barrier
+
 2007-11-13 20:10  chen
 
 	* aclocal.m4, configure, configure.ac, src/Makefile.am: change
