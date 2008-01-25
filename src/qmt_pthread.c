@@ -20,7 +20,10 @@
  *
  * Revision History:
  *   $Log: qmt_pthread.c,v $
- *   Revision 1.2  2007-05-08 16:57:25  chen
+ *   Revision 1.3  2008-01-25 18:53:54  chen
+ *   Remove unneccessary cache write for queue-based barrier
+ *
+ *   Revision 1.2  2007/05/08 16:57:25  chen
  *   add configuration flag to do affinity
  *
  *   Revision 1.1.1.1  2007/03/02 19:44:55  chen
@@ -294,10 +297,28 @@ qmt_barrier_alloc(qmt_cell_barrier_t *brc, int n)
    b->br_c_cell_cnt = n;   /* keep track of the # of threads */
    b->br_c_release = 0;    /* initialize release flag */
    b->br_c_free_ptr = p;   /* keep track of orginal malloc ptr */
- 
-   for(i = 0; i < n; i++ )
+
+   for(i = 0; i < n; i++ ) 
      b->br_c_cells[i].c_cell = 0;/* zero the cell flags */
- 
+
+   /**
+    * allocate local array to store cell flag for master thread
+    */
+   b->br_lflags_free_ptr = (int *)malloc(n * sizeof(int) + B_CACHE_SIZE - 1);
+   if (!b->br_lflags_free_ptr)
+     return -1;
+
+   /**
+    * Align the array on a cache line
+    */
+   b->br_lflags = (int *)ALIGN(b->br_lflags_free_ptr, B_CACHE_SIZE);
+
+   /**
+    * Make the local flags the same value as the cell flag
+    */
+   for (i = 0; i < n; i++)
+     b->br_lflags[i] = b->br_c_cells[i].c_cell;
+
    *brc = b;
  
    return 0;
@@ -336,18 +357,17 @@ qmt_barrier_sync (qmt_cell_barrier_t b, int id)
       /**
        * wait on the Nth cell
        */
-      while ( b->br_c_cells[i].c_cell == 0 )
+      while (b->br_c_cells[i].c_cell == b->br_lflags[i])
 	/* spin */;
- 
-      /*
-       * We can reset the Nth cell now, 
-       * because it is not being used anymore 
-       * until the next barrier.
-       */
-       b->br_c_cells[i].c_cell = 0;
+
+       /**
+	* For the master thread, this is just a 
+	* simple cache read. No cache write involved
+	*/
+       b->br_lflags[i] = b->br_c_cells[i].c_cell;
     }
  
-    /*
+    /**
      * signal all of the child threads to leave the barrier.
      */
     ++b->br_c_release;
@@ -356,7 +376,7 @@ qmt_barrier_sync (qmt_cell_barrier_t b, int id)
     /*
      * signal that the Nth thread has arrived at the barrier.
      */
-    b->br_c_cells[id].c_cell = -1;
+    ++(b->br_c_cells[id].c_cell);
 
     while ( key == b->br_c_release ) 
       /* spin */;
@@ -366,6 +386,7 @@ qmt_barrier_sync (qmt_cell_barrier_t b, int id)
 static void
 qmt_barrier_destroy (qmt_cell_barrier_t br)
 {
+  free (br->br_lflags_free_ptr);
   free (br->br_c_free_ptr);
 }
 #elif defined (_USE_SPIN_BARRIER)

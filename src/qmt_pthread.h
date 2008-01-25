@@ -20,8 +20,11 @@
  *
  * Revision History:
  *   $Log: qmt_pthread.h,v $
- *   Revision 1.1  2007-03-02 19:44:55  chen
- *   Initial revision
+ *   Revision 1.2  2008-01-25 18:53:54  chen
+ *   Remove unneccessary cache write for queue-based barrier
+ *
+ *   Revision 1.1.1.1  2007/03/02 19:44:55  chen
+ *   Initial import qmt source
  *
  *
  */
@@ -80,18 +83,28 @@ typedef struct {
  * If the following structure is changed, the ICELL_SZ
  * has to be changed.
  */
-#define ICELL_SZ        (sizeof(int)*3+sizeof(char *))
+#define ICELL_SZ        (sizeof(int)*3+sizeof(char *)+2*sizeof(int *))
  
 struct qmt_cell_barrier {
   int               br_c_magic;             
   int volatile      br_c_release;
-  char *            br_c_free_ptr;
+  char*             br_c_free_ptr;
   int               br_c_cell_cnt;
+  
+  /**
+   * Local array store cache values of every cell's flag
+   * This array is used by master thread only
+   */
+  int*              br_lflags_free_ptr;
+  int*              br_lflags;
+
+
   /**
    * Pad the strcuture so that the structure occupies 
    * the cache line width 
    */
   char              br_c_pad[B_CACHE_SIZE-ICELL_SZ];
+
   /**
    * Array of cells each occupies a different cache line
    */
