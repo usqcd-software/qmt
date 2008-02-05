@@ -33,6 +33,10 @@ case $build in
 esac
 AM_CONDITIONAL([QMT_BUILD_32BIT],[test "$qmt_64bit" = no])
 
+
+# Turn off default flag
+AC_SUBST(CFLAGS, [-D_QMT])
+
 AC_PROG_CC
 
 AM_PROG_AS
@@ -61,27 +65,36 @@ AC_ARG_ENABLE([barcelona],
 AC_HELP_STRING([--enable-barcelona],[compile qmt library optimized for AMD Opteron family 10h (barcelona) processors.]),
 [if test "$enableval" = yes; then PROC=barcelona; fi])
 
-
 # Set Compiler Flag
 if test "$BUILD_OS" = linux
 then
-	AC_SUBST(QMT_CFLAGS,['-Wall -D_REENTRANT -O3 -fexpensive-optimizations -ffast-math -fomit-frame-pointer -finline-functions -fpeephole -funroll-loops'])
-
-	if test "$PROC" = opteron
+	if test "$CC" = gcc
 	then
-		AC_MSG_NOTICE([Compile qmt library optimized for AMD Opteron processors.])
-		AC_SUBST(CPU_DEF,[-mtune=opteron])
-	elif test "$PROC" = barcelona
+		AC_SUBST(QMT_CFLAGS,['-Wall -D_REENTRANT -D_USE_GCC -O3 -fexpensive-optimizations -ffast-math -fomit-frame-pointer -finline-functions -fpeephole -funroll-loops'])
+		
+		if test "$PROC" = opteron
+		then
+			AC_MSG_NOTICE([Compile qmt library optimized for AMD Opteron processors.])
+			AC_SUBST(CPU_DEF,[-mtune=opteron])
+		elif test "$PROC" = barcelona
+		then
+			AC_MSG_NOTICE([Compile qmt library optimized for AMD Opteron family 10h (barcelona) processors.])
+			AC_SUBST(CPU_DEF,[-mtune=amdfam10])
+		elif test "$PROC" = xeon
+		then
+			AC_MSG_NOTICE([Compile qmt library optimized for Intel Xeon processors.])
+			AC_SUBST(CPU_DEF,[-mtune=nocona])
+		else
+			AC_MSG_NOTICE([Compile qmt library for generic processors.])
+		fi
+	elif test "$CC" = icc
 	then
-		AC_MSG_NOTICE([Compile qmt library optimized for AMD Opteron family 10h (barcelona) processors.])
-		AC_SUBST(CPU_DEF,[-mtune=amdfam10])
-	elif test "$PROC" = xeon
-	then
-		AC_MSG_NOTICE([Compile qmt library optimized for Intel Xeon processors.])
-		AC_SUBST(CPU_DEF,[-mtune=nocona])
+		AC_MSG_NOTICE([Compile qmt library using intel icc compiler.])
+		AC_SUBST(QMT_CFLAGS,['-Wall -D_REENTRANT -O3 -fomit-frame-pointer'])
 	else
-		AC_MSG_NOTICE([Compile qmt library for generic processors.])
-	fi
+		AC_MSG_NOTICE([Compile qmt library using compiler $CC.])
+		AC_SUBST(QMT_CFLAGS,['-Wall -D_REENTRANT -O'])		
+	fi		
 fi
 
 # Check whether we have pthread_setaffinity_np

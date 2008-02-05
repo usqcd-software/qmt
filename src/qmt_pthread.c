@@ -20,7 +20,10 @@
  *
  * Revision History:
  *   $Log: qmt_pthread.c,v $
- *   Revision 1.3  2008-01-25 18:53:54  chen
+ *   Revision 1.4  2008-02-05 16:50:37  chen
+ *   Add Intel Compiler Support
+ *
+ *   Revision 1.3  2008/01/25 18:53:54  chen
  *   Remove unneccessary cache write for queue-based barrier
  *
  *   Revision 1.2  2007/05/08 16:57:25  chen
@@ -167,7 +170,7 @@ qmt_get_num_cpus (void)
  *   spawn thread id
  */
  
-int
+static int
 qmt_thread_number (pthread_t tid)
 {
   int i;
@@ -337,7 +340,7 @@ qmt_barrier_alloc(qmt_cell_barrier_t *brc, int n)
  * return: none
  */
  
-void
+static void
 qmt_barrier_sync (qmt_cell_barrier_t b, int id)
 {
   int i, key;
@@ -1060,7 +1063,7 @@ qmt_num_threads(void)
  *   0- otherwise
  */
  
-int
+static int
 qmt_in_parallel(void)
 {
   int rv;

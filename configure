@@ -4211,6 +4211,11 @@ else
 fi
 
 
+
+# Turn off default flag
+CFLAGS=-D_QMT
+
+
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -5535,34 +5540,47 @@ if test "${enable_barcelona+set}" = set; then
 fi
 
 
-
 # Set Compiler Flag
 if test "$BUILD_OS" = linux
 then
-	QMT_CFLAGS='-Wall -D_REENTRANT -O3 -fexpensive-optimizations -ffast-math -fomit-frame-pointer -finline-functions -fpeephole -funroll-loops'
-
-
-	if test "$PROC" = opteron
+	if test "$CC" = gcc
 	then
-		{ echo "$as_me:$LINENO: Compile qmt library optimized for AMD Opteron processors." >&5
+		QMT_CFLAGS='-Wall -D_REENTRANT -D_USE_GCC -O3 -fexpensive-optimizations -ffast-math -fomit-frame-pointer -finline-functions -fpeephole -funroll-loops'
+
+
+		if test "$PROC" = opteron
+		then
+			{ echo "$as_me:$LINENO: Compile qmt library optimized for AMD Opteron processors." >&5
 echo "$as_me: Compile qmt library optimized for AMD Opteron processors." >&6;}
-		CPU_DEF=-mtune=opteron
+			CPU_DEF=-mtune=opteron
 
-	elif test "$PROC" = barcelona
-	then
-		{ echo "$as_me:$LINENO: Compile qmt library optimized for AMD Opteron family 10h (barcelona) processors." >&5
+		elif test "$PROC" = barcelona
+		then
+			{ echo "$as_me:$LINENO: Compile qmt library optimized for AMD Opteron family 10h (barcelona) processors." >&5
 echo "$as_me: Compile qmt library optimized for AMD Opteron family 10h (barcelona) processors." >&6;}
-		CPU_DEF=-mtune=amdfam10
+			CPU_DEF=-mtune=amdfam10
 
-	elif test "$PROC" = xeon
-	then
-		{ echo "$as_me:$LINENO: Compile qmt library optimized for Intel Xeon processors." >&5
+		elif test "$PROC" = xeon
+		then
+			{ echo "$as_me:$LINENO: Compile qmt library optimized for Intel Xeon processors." >&5
 echo "$as_me: Compile qmt library optimized for Intel Xeon processors." >&6;}
-		CPU_DEF=-mtune=nocona
+			CPU_DEF=-mtune=nocona
+
+		else
+			{ echo "$as_me:$LINENO: Compile qmt library for generic processors." >&5
+echo "$as_me: Compile qmt library for generic processors." >&6;}
+		fi
+	elif test "$CC" = icc
+	then
+		{ echo "$as_me:$LINENO: Compile qmt library using intel icc compiler." >&5
+echo "$as_me: Compile qmt library using intel icc compiler." >&6;}
+		QMT_CFLAGS='-Wall -D_REENTRANT -O3 -fomit-frame-pointer'
 
 	else
-		{ echo "$as_me:$LINENO: Compile qmt library for generic processors." >&5
-echo "$as_me: Compile qmt library for generic processors." >&6;}
+		{ echo "$as_me:$LINENO: Compile qmt library using compiler $CC." >&5
+echo "$as_me: Compile qmt library using compiler $CC." >&6;}
+		QMT_CFLAGS='-Wall -D_REENTRANT -O'
+
 	fi
 fi
 

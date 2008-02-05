@@ -20,11 +20,16 @@
  *
  * Revision History:
  *   $Log: qmt_atomic.c,v $
- *   Revision 1.1  2007-03-02 19:44:55  chen
- *   Initial revision
+ *   Revision 1.2  2008-02-05 16:50:37  chen
+ *   Add Intel Compiler Support
+ *
+ *   Revision 1.1.1.1  2007/03/02 19:44:55  chen
+ *   Initial import qmt source
  *
  *
  */
+#include "qmt_atomic.h"
+
 #if defined (__i386)
 int
 qmt_atomic_int_exchange_and_add (volatile int *atomic, 
@@ -207,24 +212,11 @@ qmt_atomic_int_dec_and_test(volatile int *atomic)
 #endif
 
 
-inline void
-qmt_atomic_int_set (volatile int *atomic, int value)
-{
-  *(atomic) = value;
-}
-
-inline int
-qmt_atomic_int_get (volatile int *atomic)
-{
-  return (*(atomic));
-}
-
 #else
 
 #error atomic operations have not been implemented
 
 #endif
-#include "qmt_atomic.h"
 
 int
 qmt_qlock_init (qmt_qlock_t* lock)
@@ -251,6 +243,7 @@ qmt_qlock_unlock (qmt_qlock_t* lock)
 int
 qmt_qlock_destroy (qmt_qlock_t* lock)
 {
+  *lock = 0xff;
   return 0;
 }
 

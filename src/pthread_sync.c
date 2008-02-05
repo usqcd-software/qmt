@@ -122,7 +122,7 @@ static void test_lock_r (void* arg, int stid)
   float a=0.; 
   qmt_spinlock_t *lock = (qmt_spinlock_t *)arg;
 
-  for (j = 0; j < innerreps/nthreads; j++) {
+  for (j = 0; j < innerreps/nthreads; j++) { 
     qmt_spin_lock (lock);
     for (i=0; i<delaylength; i++) a+=i; 
     if (a < 0) printf("%f \n",a); 
@@ -255,7 +255,8 @@ void stats (double *mtp, double *sdp)
 
 static void refer()
 {
-  int j,k; 
+  int i, j, k; 
+  float a;
   double start; 
   double meantime, sd; 
 
@@ -267,9 +268,23 @@ static void refer()
     start  = getclock(); 
     for (j=0; j<innerreps; j++){
 #ifdef _QMT_PUBLIC
-      delay((void *)0, 0); 
+
+#ifdef _USE_GCC
+      delay ((void *)0, 0);
 #else
-      delay(0, 0, 0, (void *)0);
+      for (i=0; i<delaylength; i++) a+=i; 
+      if (a < 0) printf("%f \n",a); 
+#endif
+
+#else
+
+#ifdef _USE_GCC
+      delay (0, 0, 0, (void *)0);
+#else
+      for (i=0; i<delaylength; i++) a+=i; 
+      if (a < 0) printf("%f \n",a); 
+#endif
+
 #endif
     }
     times[k] = (getclock() - start) * 1.0e6 / (double) innerreps;
@@ -285,7 +300,8 @@ static void refer()
 
 static void referred()
 {
-  int j,k; 
+  int i,j,k; 
+  float a;
   double start; 
   double meantime, sd; 
   int aaaa; 
@@ -300,9 +316,23 @@ static void referred()
 #if 1
     for (j=0; j<innerreps; j++){
 #ifdef _QMT_PUBLIC
-      delay((void *)0, 0); 
+
+#ifdef _USE_GCC
+      delay ((void *)0, 0);
 #else
-      delay(0, 0, 0, (void *)0); 
+      for (i=0; i<delaylength; i++) a+=i; 
+      if (a < 0) printf("%f \n",a);
+#endif
+
+#else
+
+#ifdef _USE_GCC
+      delay (0, 0, 0, (void *)0);
+#else
+      for (i=0; i<delaylength; i++) a+=i; 
+      if (a < 0) printf("%f \n",a);
+#endif
+
 #endif
       redaaaa += 1; 
     }

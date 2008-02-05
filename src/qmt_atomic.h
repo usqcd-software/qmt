@@ -20,8 +20,11 @@
  *
  * Revision History:
  *   $Log: qmt_atomic.h,v $
- *   Revision 1.1  2007-03-02 19:44:55  chen
- *   Initial revision
+ *   Revision 1.2  2008-02-05 16:50:37  chen
+ *   Add Intel Compiler Support
+ *
+ *   Revision 1.1.1.1  2007/03/02 19:44:55  chen
+ *   Initial import qmt source
  *
  *
  */
@@ -59,6 +62,12 @@ extern void qmt_atomic_int_add (volatile int *atomic,
  * Increase atomic value by one
  */
 extern void qmt_atomic_int_inc (volatile int *atomic);
+
+
+/**
+ * Increase atomic float value by one
+ */
+extern void qmt_atomic_float_inc (volatile float* atomic);
 
 
 /**
