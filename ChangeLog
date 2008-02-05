@@ -1,3 +1,8 @@
+2008-02-05 11:50  chen
+
+	* configure, configure.ac, src/pthread_sync.c, src/qmt_atomic.c,
+	  src/qmt_atomic.h, src/qmt_pthread.c: Add Intel Compiler Support
+
 2008-01-25 13:53  chen
 
 	* src/: qmt_pthread.c, qmt_pthread.h: Remove unneccessary cache
