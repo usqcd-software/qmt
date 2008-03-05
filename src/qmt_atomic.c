@@ -20,7 +20,10 @@
  *
  * Revision History:
  *   $Log: qmt_atomic.c,v $
- *   Revision 1.2  2008-02-05 16:50:37  chen
+ *   Revision 1.3  2008-03-05 20:16:57  chen
+ *   fix for i386
+ *
+ *   Revision 1.2  2008/02/05 16:50:37  chen
  *   Add Intel Compiler Support
  *
  *   Revision 1.1.1.1  2007/03/02 19:44:55  chen
@@ -113,18 +116,6 @@ qmt_atomic_int_dec_and_test (volatile int *atomic)
 			: "=m" (*atomic), "=qm" (result)
 			: "m" (*atomic));	
   return result;
-}
-
-inline void
-qmt_atomic_int_set (volatile int *atomic, int value)
-{
-  *(atomic) = value;
-}
-
-inline int
-qmt_atomic_int_get (volatile int *atomic)
-{
-  return (*(atomic));
 }
 
 #elif defined (__x86_64)
