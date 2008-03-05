@@ -1,3 +1,7 @@
+2008-03-05 15:16  chen
+
+	* src/qmt_atomic.c: fix for i386
+
 2008-02-05 11:50  chen
 
 	* configure, configure.ac, src/pthread_sync.c, src/qmt_atomic.c,
