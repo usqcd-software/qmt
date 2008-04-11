@@ -1,3 +1,7 @@
+2008-04-11 10:46  chen
+
+	* src/: qmt.h, qmt_pthread.c: remove OMP_NUM_THREADS env
+
 2008-03-05 15:16  chen
 
 	* src/qmt_atomic.c: fix for i386
