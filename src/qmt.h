@@ -20,7 +20,10 @@
  *
  * Revision History:
  *   $Log: qmt.h,v $
- *   Revision 1.2  2007-10-05 04:52:50  edwards
+ *   Revision 1.3  2008-04-11 14:46:36  chen
+ *   remove OMP_NUM_THREADS env
+ *
+ *   Revision 1.2  2007/10/05 04:52:50  edwards
  *   Added some doxygen starting info.
  *
  *   Revision 1.1.1.1  2007/03/02 19:44:55  chen
@@ -88,7 +91,6 @@ extern int qmt_finalize (void);
 /**
  * Parallel execution of user supplied function on multiple
  * threads. The number of threads is defined through the following order
- * OMP_NUM_THREADS
  * QMT_NUM_THREADS
  * Otherwise, the number of threads will be the number of processing cores.
  *
@@ -106,7 +108,6 @@ extern int qmt_pexec (qmt_userfunc_t func, void* arg);
 /**
  * Parallel execution of user supplied lattice QCD code on multiple
  * threads. The number of threads is defined through the following order
- * OMP_NUM_THREADS
  * QMT_NUM_THREADS
  * Otherwise, the number of threads will be the number of processing cores.
  *

@@ -20,7 +20,10 @@
  *
  * Revision History:
  *   $Log: qmt_pthread.c,v $
- *   Revision 1.4  2008-02-05 16:50:37  chen
+ *   Revision 1.5  2008-04-11 14:46:36  chen
+ *   remove OMP_NUM_THREADS env
+ *
+ *   Revision 1.4  2008/02/05 16:50:37  chen
  *   Add Intel Compiler Support
  *
  *   Revision 1.3  2008/01/25 18:53:54  chen
@@ -685,8 +688,7 @@ qmt_create_threads (void)
   my_thread_info.ncores = qmt_get_num_cpus ();
 
   /* Get number of threads from an environment variable */
-  if ((env_val = getenv("OMP_NUM_THREADS")) != NULL  ||
-      (env_val = getenv("QMT_NUM_THREADS")) != NULL) {
+  if ((env_val = getenv("QMT_NUM_THREADS")) != NULL) {
     int val;
     val = atoi(env_val);
     if ( val >= 1 && val <= MAX_THREADS)
