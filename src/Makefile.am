@@ -13,7 +13,7 @@ else
 EXTRA_DIST		= qmt_lock_impl_i386.S qmt_lock_impl_x86_64.S
 endif
 
-AM_CFLAGS	= @BARRIER_DEF@ @RELEASE_DEF@ @AFFINITY_DEF@ @CPU_DEF@ @QMT_CFLAGS@
+AM_CFLAGS	= @BARRIER_DEF@ @RELEASE_DEF@ @AFFINITY_DEF@ @QMT_CFLAGS@
 
 pthread_sync_SOURCES	= pthread_sync.c
 pthread_sync_LDADD	= libqmt.a -lpthread -lm

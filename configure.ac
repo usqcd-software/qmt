@@ -75,15 +75,15 @@ then
 		if test "$PROC" = opteron
 		then
 			AC_MSG_NOTICE([Compile qmt library optimized for AMD Opteron processors.])
-			AC_SUBST(CPU_DEF,[-mtune=opteron])
+			dnl AC_SUBST(CPU_DEF,[-mtune=opteron])
 		elif test "$PROC" = barcelona
 		then
 			AC_MSG_NOTICE([Compile qmt library optimized for AMD Opteron family 10h (barcelona) processors.])
-			AC_SUBST(CPU_DEF,[-mtune=amdfam10])
+			dnl AC_SUBST(CPU_DEF,[-mtune=amdfam10])
 		elif test "$PROC" = xeon
 		then
 			AC_MSG_NOTICE([Compile qmt library optimized for Intel Xeon processors.])
-			AC_SUBST(CPU_DEF,[-mtune=nocona])
+			dnl AC_SUBST(CPU_DEF,[-mtune=nocona])
 		else
 			AC_MSG_NOTICE([Compile qmt library for generic processors.])
 		fi
