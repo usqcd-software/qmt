@@ -1,3 +1,11 @@
+2009-10-31 16:58  bjoo
+
+	* INSTALL: Testing GIT
+
+2009-10-31 16:43  bjoo
+
+	* INSTALL: Added a line of text to INSTALL as a test
+
 2009-02-27 10:15  bjoo
 
 	* aclocal.m4, configure, configure.ac, src/Makefile.am: Removed
