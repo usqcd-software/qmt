@@ -1,5 +1,5 @@
 # configure.ac file for qmt package
-AC_INIT([qmt], [0.9], [qmt authors <chen@jlab.org]>,[qmt])
+AC_INIT([qmt], [1.0], [qmt authors <chen@jlab.org]>,[qmt])
 AC_COPYRIGHT([Jefferson Science Assoicates, LLC. Jefferson Lab])
 
 AC_CONFIG_SRCDIR([src/qmt.h])
