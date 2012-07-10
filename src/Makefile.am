@@ -1,6 +1,6 @@
 lib_LIBRARIES	= libqmt.a
 check_PROGRAMS	= pthread_sync
-TESTS		= $(check_PROGRAMS)
+#TESTS		= $(check_PROGRAMS)
 include_HEADERS	= qmt.h qmt_atomic.h qmt_lock.h
 libqmt_a_SOURCES	= qmt.h qmt_atomic.c qmt_atomic.h \
 			qmt_lock.c qmt_lock.h \
